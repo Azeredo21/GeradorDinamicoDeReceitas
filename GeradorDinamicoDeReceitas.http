@@ -1,0 +1,6 @@
+@GeradorDinamicoDeReceitas_HostAddress = http://localhost:5062
+
+GET {{GeradorDinamicoDeReceitas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
