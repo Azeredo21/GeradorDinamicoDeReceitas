@@ -28,9 +28,9 @@ namespace GeradorDinamicoDeReceitas.Controllers
                 var receita = await _recipeAiService.GerarReceitaAsync(request, ct);
                 return Ok(receita);
             }
-            catch (RecipeGenerationException)
+            catch (RecipeGenerationException ex)
             {
-                return StatusCode(StatusCodes.Status502BadGateway, "Não foi possível interpretar a resposta da IA.");
+                return StatusCode(StatusCodes.Status502BadGateway, $"Erro ao gerar receita!\n{ex.Message}");
             }
             catch (OllamaUnavailableException)
             {

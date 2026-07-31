@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GeradorDinamicoDeReceitas")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa134a566260839ccc6ec06d07cf4e442ef7b746")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+89f74aa9079e06835ba0ba086fa6c031845189f6")]
 [assembly: System.Reflection.AssemblyProductAttribute("GeradorDinamicoDeReceitas")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GeradorDinamicoDeReceitas")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
