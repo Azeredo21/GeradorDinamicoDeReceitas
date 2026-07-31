@@ -8,6 +8,9 @@ C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\GeradorDinamicoDeReceita
 C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\GeradorDinamicoDeReceitas.pdb
 C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\Microsoft.OpenApi.dll
+C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Projetos\GeradorDinamicoDeReceitas\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Projetos\GeradorDinamicoDeReceitas\obj\Debug\net10.0\GeradorDinamicoDeReceitas.csproj.AssemblyReference.cache
 C:\Projetos\GeradorDinamicoDeReceitas\obj\Debug\net10.0\rpswa.dswa.cache.json
 C:\Projetos\GeradorDinamicoDeReceitas\obj\Debug\net10.0\GeradorDinamicoDeReceitas.GeneratedMSBuildEditorConfig.editorconfig
