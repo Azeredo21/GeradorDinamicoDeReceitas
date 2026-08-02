@@ -4,6 +4,6 @@ namespace GeradorDinamicoDeReceitas.Services
 {
     public interface IRecipeAiService
     {
-        Task<RecipeResponse> GerarReceitaAsync(RecipeRequest request, CancellationToken ct);
+        Task<RecipeResponse> GenerateRecipeAsync(RecipeRequest request, CancellationToken ct);
     }
 }

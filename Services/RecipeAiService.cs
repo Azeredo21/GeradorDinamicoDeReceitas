@@ -2,6 +2,7 @@ using System.Text.Json;
 using GeradorDinamicoDeReceitas.Configuration;
 using GeradorDinamicoDeReceitas.Exceptions;
 using GeradorDinamicoDeReceitas.Models;
+using GeradorDinamicoDeReceitas.Models.Ollama;
 using Microsoft.Extensions.Options;
 
 namespace GeradorDinamicoDeReceitas.Services
@@ -25,7 +26,7 @@ namespace GeradorDinamicoDeReceitas.Services
             _logger = logger;
         }
 
-        public async Task<RecipeResponse> GerarReceitaAsync(RecipeRequest request, CancellationToken ct)
+        public async Task<RecipeResponse> GenerateRecipeAsync(RecipeRequest request, CancellationToken ct)
         {
             var systemPrompt = PromptTemplates.SystemPrompt;
             var userPrompt = _promptBuilder.BuildUserPrompt(request);
@@ -36,7 +37,7 @@ namespace GeradorDinamicoDeReceitas.Services
             {
                 try
                 {
-                    var rawJson = await _ollamaClient.ChatAsync(systemPrompt, userPrompt, ct);
+                    var rawJson = await _ollamaClient.ChatAsync(systemPrompt, userPrompt, OllamaSchemas.Recipe, ct);
                     var recipe = JsonSerializer.Deserialize<RecipeResponse>(rawJson, JsonOptions.Default)
                         ?? throw new JsonException("Deserialization returned null.");
 

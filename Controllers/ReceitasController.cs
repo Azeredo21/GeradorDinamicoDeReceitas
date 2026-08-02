@@ -25,7 +25,7 @@ namespace GeradorDinamicoDeReceitas.Controllers
 
             try
             {
-                var recipe = await _recipeAiService.GerarReceitaAsync(request, ct);
+                var recipe = await _recipeAiService.GenerateRecipeAsync(request, ct);
                 return Ok(recipe);
             }
             catch (RecipeGenerationException ex)

@@ -10,65 +10,19 @@ namespace GeradorDinamicoDeReceitas.Services
         private readonly HttpClient _httpClient;
         private readonly OllamaSettings _settings;
 
-        // Schema usado no campo "format" — restringe a saída do modelo a esta estrutura.
-        private static readonly JsonNode RecipeJsonSchema = JsonNode.Parse("""
-        {
-        "type": "object",
-        "properties": {
-            "name": { "type": "string" },
-            "description": { "type": "string" },
-            "prepTimeMinutes": { "type": "integer" },
-            "servings": { "type": "integer" },
-            "ingredients": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                "item": { "type": "string" },
-                "quantity": { "type": "string" }
-                },
-                "required": ["item", "quantity"]
-            }
-            },
-            "instructions": {
-            "type": "array",
-            "items": { "type": "string" }
-            },
-            "approximateNutritionInfo": {
-            "type": "object",
-            "properties": {
-                "calories": { "type": "integer" },
-                "proteinG": { "type": "integer" },
-                "carbsG": { "type": "integer" },
-                "fatG": { "type": "integer" }
-            },
-            "required": ["calories", "proteinG", "carbsG", "fatG"]
-            },
-            "restrictionsMet": {
-            "type": "array",
-            "items": { "type": "string" }
-            }
-        },
-        "required": [
-            "name", "description", "prepTimeMinutes", "servings",
-            "ingredients", "instructions", "approximateNutritionInfo", "restrictionsMet"
-        ]
-        }
-        """)!;
-
         public OllamaClient(HttpClient httpClient, IOptions<OllamaSettings> settings)
         {
             _httpClient = httpClient;
             _settings = settings.Value;
         }
 
-        public async Task<string> ChatAsync(string systemPrompt, string userPrompt, CancellationToken ct)
+        public async Task<string> ChatAsync(string systemPrompt, string userPrompt, JsonNode jsonSchema, CancellationToken ct)
         {
             var request = new OllamaChatRequest
             {
                 Model = _settings.Model,
                 Stream = false,
-                Format = RecipeJsonSchema,
+                Format = jsonSchema,
                 Options = new OllamaOptions
                 {
                     Temperature = _settings.Temperature,
