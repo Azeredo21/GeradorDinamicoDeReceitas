@@ -27,8 +27,8 @@ namespace GeradorDinamicoDeReceitas.Services
 
         public async Task<RecipeResponse> GerarReceitaAsync(RecipeRequest request, CancellationToken ct)
         {
-            var userPrompt = _promptBuilder.BuildUserPrompt(request);
             var systemPrompt = PromptTemplates.SystemPrompt;
+            var userPrompt = _promptBuilder.BuildUserPrompt(request);
 
             Exception? lastError = null;
 
@@ -40,13 +40,22 @@ namespace GeradorDinamicoDeReceitas.Services
                     var receita = JsonSerializer.Deserialize<RecipeResponse>(rawJson, JsonOptions.Default)
                         ?? throw new JsonException("Deserialização retornou nulo.");
 
+                    ValidarSemantica(receita, request);
+
                     return receita;
                 }
                 catch (JsonException ex)
                 {
                     lastError = ex;
                     _logger.LogWarning("Tentativa {Tentativa}: JSON inválido retornado pelo Ollama.", tentativa + 1);
-                    // Na próxima tentativa, poderia reforçar o prompt pedindo correção do formato
+                    userPrompt += $"\n\nATENÇÃO: a resposta anterior estava malformada ({ex.Message}). " +
+                                "Corrija e responda novamente apenas com o JSON válido, seguindo o schema.";
+                }
+                catch (RecipeValidationException ex)
+                {
+                    lastError = ex;
+                    _logger.LogWarning("Tentativa {Tentativa}: {Motivo}", tentativa + 1, ex.Message);
+                    userPrompt += $"\n\nATENÇÃO: {ex.Message} Gere novamente corrigindo especificamente esse ponto.";
                 }
                 catch (HttpRequestException ex)
                 {
@@ -56,6 +65,25 @@ namespace GeradorDinamicoDeReceitas.Services
             }
 
             throw new RecipeGenerationException("Falha ao gerar receita após múltiplas tentativas.", lastError);
+        }
+
+        private static void ValidarSemantica(RecipeResponse receita, RecipeRequest request)
+        {
+            if (receita.Ingredientes.Count == 0)
+                throw new RecipeValidationException("O campo 'ingredientes' veio vazio.");
+
+            if (receita.ModoPreparo.Count == 0)
+                throw new RecipeValidationException("O campo 'modoPreparo' veio vazio.");
+
+            var restricoesNaoConfirmadas = request.Restricoes
+                .Where(r => !receita.RestricoesAtendidas.Contains(r, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+
+            if (restricoesNaoConfirmadas.Count > 0)
+            {
+                throw new RecipeValidationException(
+                    $"As restrições [{string.Join(", ", restricoesNaoConfirmadas)}] não foram confirmadas no campo 'restricoesAtendidas'.");
+            }
         }
     }
 }
