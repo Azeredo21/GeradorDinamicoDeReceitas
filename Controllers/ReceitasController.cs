@@ -20,21 +20,21 @@ namespace GeradorDinamicoDeReceitas.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> Gerar([FromBody] RecipeRequest request, CancellationToken ct)
         {
-            if (request.Ingredientes is null || request.Ingredientes.Count == 0)
-                return BadRequest("Informe ao menos um ingrediente.");
+            if (request.Ingredients is null || request.Ingredients.Count == 0)
+                return BadRequest("Please provide at least one ingredient.");
 
             try
             {
-                var receita = await _recipeAiService.GerarReceitaAsync(request, ct);
-                return Ok(receita);
+                var recipe = await _recipeAiService.GerarReceitaAsync(request, ct);
+                return Ok(recipe);
             }
             catch (RecipeGenerationException ex)
             {
-                return StatusCode(StatusCodes.Status502BadGateway, $"Erro ao gerar receita!\n{ex.Message}");
+                return StatusCode(StatusCodes.Status502BadGateway, $"Error generating recipe!\n{ex.Message}");
             }
             catch (OllamaUnavailableException)
             {
-                return StatusCode(StatusCodes.Status503ServiceUnavailable, "Serviço de IA indisponível no momento.");
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "The AI service is currently unavailable.");
             }
         }
     }

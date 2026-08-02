@@ -1,28 +1,29 @@
 namespace GeradorDinamicoDeReceitas.Models
 {
+   // Models/Responses/RecipeResponse.cs
     public class RecipeResponse
     {
-        public string Nome { get; set; } = default!;
-        public string Descricao { get; set; } = default!;
-        public int TempoPreparoMinutos { get; set; }
-        public int Porcoes { get; set; }
-        public List<RecipeIngrediente> Ingredientes { get; set; } = new();
-        public List<string> ModoPreparo { get; set; } = new();
-        public InformacoesNutricionais InformacoesNutricionaisAproximadas { get; set; } = default!;
-        public List<string> RestricoesAtendidas { get; set; } = new();
+        public string Name { get; set; } = default!;
+        public string Description { get; set; } = default!;
+        public int PrepTimeMinutes { get; set; }
+        public int Servings { get; set; }
+        public List<RecipeIngredient> Ingredients { get; set; } = new();
+        public List<string> Instructions { get; set; } = new();
+        public NutritionInfo ApproximateNutritionInfo { get; set; } = default!;
+        public List<string> RestrictionsMet { get; set; } = new();
     }
 
-    public class RecipeIngrediente
+    public class RecipeIngredient
     {
         public string Item { get; set; } = default!;
-        public string Quantidade { get; set; } = default!;
+        public string Quantity { get; set; } = default!;
     }
 
-    public class InformacoesNutricionais
+    public class NutritionInfo
     {
-        public int Calorias { get; set; }
-        public int ProteinasG { get; set; }
-        public int CarboidratosG { get; set; }
-        public int GordurasG { get; set; }
+        public int Calories { get; set; }
+        public int ProteinG { get; set; }
+        public int CarbsG { get; set; }
+        public int FatG { get; set; }
     }
 }

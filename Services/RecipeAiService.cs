@@ -32,57 +32,57 @@ namespace GeradorDinamicoDeReceitas.Services
 
             Exception? lastError = null;
 
-            for (var tentativa = 0; tentativa <= _settings.MaxRetries; tentativa++)
+            for (var attempt = 0; attempt <= _settings.MaxRetries; attempt++)
             {
                 try
                 {
                     var rawJson = await _ollamaClient.ChatAsync(systemPrompt, userPrompt, ct);
-                    var receita = JsonSerializer.Deserialize<RecipeResponse>(rawJson, JsonOptions.Default)
-                        ?? throw new JsonException("Deserialização retornou nulo.");
+                    var recipe = JsonSerializer.Deserialize<RecipeResponse>(rawJson, JsonOptions.Default)
+                        ?? throw new JsonException("Deserialization returned null.");
 
-                    ValidarSemantica(receita, request);
+                    ValidateSemantics(recipe, request);
 
-                    return receita;
+                    return recipe;
                 }
                 catch (JsonException ex)
                 {
                     lastError = ex;
-                    _logger.LogWarning("Tentativa {Tentativa}: JSON inválido retornado pelo Ollama.", tentativa + 1);
-                    userPrompt += $"\n\nATENÇÃO: a resposta anterior estava malformada ({ex.Message}). " +
-                                "Corrija e responda novamente apenas com o JSON válido, seguindo o schema.";
+                    _logger.LogWarning("Attempt {Attempt}: invalid JSON returned by Ollama.", attempt + 1);
+                    userPrompt += $"\n\nWARNING: the previous response was malformed ({ex.Message}). " +
+                                "Please fix it and respond again with only valid JSON following the schema.";
                 }
                 catch (RecipeValidationException ex)
                 {
                     lastError = ex;
-                    _logger.LogWarning("Tentativa {Tentativa}: {Motivo}", tentativa + 1, ex.Message);
-                    userPrompt += $"\n\nATENÇÃO: {ex.Message} Gere novamente corrigindo especificamente esse ponto.";
+                    _logger.LogWarning("Attempt {Attempt}: {Reason}", attempt + 1, ex.Message);
+                    userPrompt += $"\n\nWARNING: {ex.Message} Please generate again by correcting specifically that issue.";
                 }
                 catch (HttpRequestException ex)
                 {
-                    _logger.LogError(ex, "Falha de comunicação com o Ollama.");
-                    throw new OllamaUnavailableException("Não foi possível conectar ao Ollama.", ex);
+                    _logger.LogError(ex, "Communication failure with Ollama.");
+                    throw new OllamaUnavailableException("Could not connect to Ollama.", ex);
                 }
             }
 
-            throw new RecipeGenerationException("Falha ao gerar receita após múltiplas tentativas.", lastError);
+            throw new RecipeGenerationException("Failed to generate recipe after multiple attempts.", lastError);
         }
 
-        private static void ValidarSemantica(RecipeResponse receita, RecipeRequest request)
+        private static void ValidateSemantics(RecipeResponse recipe, RecipeRequest request)
         {
-            if (receita.Ingredientes.Count == 0)
-                throw new RecipeValidationException("O campo 'ingredientes' veio vazio.");
+            if (recipe.Ingredients.Count == 0)
+                throw new RecipeValidationException("The 'ingredients' field came back empty.");
 
-            if (receita.ModoPreparo.Count == 0)
-                throw new RecipeValidationException("O campo 'modoPreparo' veio vazio.");
+            if (recipe.Instructions.Count == 0)
+                throw new RecipeValidationException("The 'instructions' field came back empty.");
 
-            var restricoesNaoConfirmadas = request.Restricoes
-                .Where(r => !receita.RestricoesAtendidas.Contains(r, StringComparer.OrdinalIgnoreCase))
+            var unconfirmedRestrictions = request.Restrictions
+                .Where(r => !recipe.RestrictionsMet.Contains(r, StringComparer.OrdinalIgnoreCase))
                 .ToList();
 
-            if (restricoesNaoConfirmadas.Count > 0)
+            if (unconfirmedRestrictions.Count > 0)
             {
                 throw new RecipeValidationException(
-                    $"As restrições [{string.Join(", ", restricoesNaoConfirmadas)}] não foram confirmadas no campo 'restricoesAtendidas'.");
+                    $"The restrictions [{string.Join(", ", unconfirmedRestrictions)}] were not confirmed in the 'restrictionsMet' field.");
             }
         }
     }

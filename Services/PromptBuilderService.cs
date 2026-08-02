@@ -7,127 +7,152 @@ namespace GeradorDinamicoDeReceitas.Services
     {
       public string BuildUserPrompt(RecipeRequest request)
       {
-          var ingredientes = string.Join(", ", request.Ingredientes);
-          var restricoes = request.Restricoes.Count > 0
-              ? string.Join("; ", request.Restricoes.Select(TraduzirRestricao))
-              : "nenhuma restrição específica";
+          var ingredients = string.Join(", ", request.Ingredients);
+          var restrictions = request.Restrictions.Count > 0
+              ? string.Join("; ", request.Restrictions)
+              : "none specified";
 
           var prompt = $"""
-          Ingredientes disponíveis: {ingredientes}.
-          Restrições alimentares: {restricoes}.
-          Tipo de prato desejado: {request.Preferencias?.TipoDePrato ?? "qualquer"}.
-          Tempo máximo de preparo: {request.Preferencias?.TempoMaximoPreparoMinutos?.ToString() ?? "sem limite"} minutos.
-          Porções: {request.Preferencias?.Porcoes ?? 2}.
+          Available ingredients: {ingredients}.
+          Dietary restrictions: {restrictions}.
+          Desired dish type: {request.Preferences?.DishType ?? "any"}.
+          Maximum prep time: {request.Preferences?.MaxPrepTimeMinutes?.ToString() ?? "no limit"} minutes.
+          Servings: {request.Preferences?.Servings ?? 2}.
 
-          Gere uma receita respeitando rigorosamente as restrições informadas.
+          Generate a recipe that strictly respects the given restrictions.
           """;
 
-          if (request.Restricoes.Count > 0)
+          if (request.Restrictions.Count > 0)
           {
               prompt += $"""
-              IMPORTANTE: a receita final NÃO PODE conter nenhum ingrediente proibido pelas restrições listadas acima.
-              Antes de responder, revise cada ingrediente e confirme que nenhuma restrição foi violada.
+              IMPORTANT: the final recipe MUST NOT contain any ingredient prohibited by the restrictions listed above.
+              Before responding, review each ingredient and confirm that no restriction has been violated.
               """;
           }
 
           return prompt;
       }
 
-      private static string TraduzirRestricao(string restricao) => restricao switch
+      private static string TranslateRestriction(string restriction) => restriction switch
       {
-          "sem-lactose" => "não utilizar leite, queijo, manteiga ou qualquer derivado de leite",
-          "sem-gluten" => "não utilizar trigo, cevada, centeio ou derivados contendo glúten",
-          "vegano" => "não utilizar nenhum ingrediente de origem animal",
-          "vegetariano" => "não utilizar carnes ou frutos do mar",
-          "low-carb" => "minimizar carboidratos, evitando açúcar, farinha refinada e arroz branco em grande quantidade",
-          _ => restricao
+          "lactose-free" => "do not use milk, cheese, butter, or any milk-derived ingredients",
+          "gluten-free" => "do not use wheat, barley, rye, or any gluten-containing ingredients",
+          "vegan" => "do not use any ingredients of animal origin",
+          "vegetarian" => "do not use meat or seafood",
+          "low-carb" => "minimize carbohydrates by avoiding sugar, refined flour, and white rice in large amounts",
+          _ => restriction
       };
     }
 
     public static class PromptTemplates
     {
-        //Adicionado Few-Shot Prompting ao SystemPrompt para melhorar a consistência do JSON retornado pelo modelo.
         public const string SystemPrompt = """
-        Você é um chef especializado em adaptar receitas a partir de ingredientes disponíveis e restrições alimentares.
-        Responda SEMPRE e SOMENTE com um JSON válido, sem nenhum texto fora do JSON, seguindo o schema fornecido.
-                
-        Exemplo 1:
-        Entrada:
-        Ingredientes disponíveis: arroz, feijão, tomate, cebola, azeite, alho.
-        Restrições alimentares: sem-lactose.
-        Tipo de prato desejado: jantar.
-        Tempo máximo de preparo: 45 minutos.
-        Porções: 2.
+        You are a chef specialized in adapting recipes based on available ingredients and dietary restrictions.
+        Always respond with ONLY valid JSON, with no text outside the JSON, following the provided schema.
 
-        Saída:
+        --- EXAMPLE 1 ---
+        Input:
+        Available ingredients: egg, wheat flour, milk.
+        Dietary restrictions: none specified.
+        Desired dish type: any.
+        Maximum prep time: no limit minutes.
+        Servings: 2.
+
+        Expected output:
         {
-          "nome": "Arroz com Feijão Especial",
-          "descricao": "Uma refeição saborosa e reconfortante feita com ingredientes simples e sem lactose.",
-          "tempoPreparoMinutos": 35,
-          "porcoes": 2,
-          "ingredientes": [
-            { "item": "arroz", "quantidade": "1 xícara" },
-            { "item": "feijão", "quantidade": "1 xícara" },
-            { "item": "tomate", "quantidade": "1 unidade picada" },
-            { "item": "cebola", "quantidade": "1/2 unidade picada" },
-            { "item": "azeite", "quantidade": "1 colher de sopa" },
-            { "item": "alho", "quantidade": "2 dentes picados" }
+          "name": "Simple pancakes",
+          "description": "Classic pancakes, quick and easy to make.",
+          "prepTimeMinutes": 15,
+          "servings": 2,
+          "ingredients": [
+            { "item": "egg", "quantity": "2 units" },
+            { "item": "wheat flour", "quantity": "1 cup" },
+            { "item": "milk", "quantity": "1 cup" }
           ],
-          "modoPreparo": [
-            "Cozinhe o feijão até ficar macio.",
-            "Refogue a cebola e o alho no azeite.",
-            "Adicione o tomate e cozinhe por alguns minutos.",
-            "Misture o arroz cozido e o feijão, ajustando o sal.",
-            "Sirva quente."
+          "instructions": [
+            "Whisk all the ingredients together until you get a smooth batter.",
+            "Heat a non-stick pan over medium heat.",
+            "Pour a ladle of batter and cook until golden on both sides."
           ],
-          "informacoesNutricionaisAproximadas": {
-            "calorias": 430,
-            "proteinasG": 16,
-            "carboidratosG": 68,
-            "gordurasG": 8
-          },
-          "restricoesAtendidas": [ "sem-lactose" ]
+          "approximateNutritionInfo": { "calories": 220, "proteinG": 9, "carbsG": 28, "fatG": 7 },
+          "restrictionsMet": []
         }
 
-        Exemplo 2:
-        Entrada:
-        Ingredientes disponíveis: macarrão integral, cogumelos, espinafre, alho, azeite, tomate cereja.
-        Restrições alimentares: vegano; sem-gluten.
-        Tipo de prato desejado: almoço.
-        Tempo máximo de preparo: 30 minutos.
-        Porções: 3.
+        --- EXAMPLE 2 ---
+        Input:
+        Available ingredients: chicken breast, salt, oil, whole black peppercorns, brandy, beef stock, heavy cream.
+        Dietary restrictions: gluten-free.
+        Desired dish type: main-course.
+        Maximum prep time: 30 minutes.
+        Servings: 4.
 
-        Saída:
+        Expected output:
         {
-          "nome": "Macarrão Integral Vegano com Cogumelos",
-          "descricao": "Um prato leve e nutritivo, 100% vegano e sem glúten, usando ingredientes frescos e simples.",
-          "tempoPreparoMinutos": 28,
-          "porcoes": 3,
-          "ingredientes": [
-            { "item": "macarrão integral sem glúten", "quantidade": "250g" },
-            { "item": "cogumelos", "quantidade": "150g fatiados" },
-            { "item": "espinafre", "quantidade": "100g" },
-            { "item": "alho", "quantidade": "2 dentes picados" },
-            { "item": "azeite", "quantidade": "1 colher de sopa" },
-            { "item": "tomate cereja", "quantidade": "100g cortados ao meio" }
+          "name": "Chicken au poivre with creamy peppercorn sauce",
+          "description": "Pan-seared chicken breasts served with a rich brandy, cracked peppercorn and cream sauce, inspired by the classic French steak au poivre.",
+          "prepTimeMinutes": 28,
+          "servings": 4,
+          "ingredients": [
+            { "item": "chicken breast, halved horizontally", "quantity": "2 large pieces (500-600g total)" },
+            { "item": "salt", "quantity": "3/4 tsp" },
+            { "item": "vegetable oil", "quantity": "2 tbsp" },
+            { "item": "whole black peppercorns, coarsely crushed", "quantity": "2 tsp" },
+            { "item": "brandy", "quantity": "80 ml" },
+            { "item": "low-sodium beef stock", "quantity": "360 ml" },
+            { "item": "heavy cream", "quantity": "180 ml" }
           ],
-          "modoPreparo": [
-            "Cozinhe o macarrão conforme as instruções da embalagem.",
-            "Refogue o alho no azeite até dourar.",
-            "Adicione os cogumelos e cozinhe até ficarem macios.",
-            "Incorpore o espinafre e cozinhe até murchar.",
-            "Misture o macarrão cozido e o tomate cereja, temperando a gosto."
+          "instructions": [
+            "Season the chicken pieces with salt on both sides.",
+            "Heat the oil in a large pan over high heat and sear the chicken 2-3 minutes per side until golden. Set aside.",
+            "Turn off the heat, carefully pour in the brandy and scrape the browned bits from the bottom of the pan; let it bubble for about 30 seconds.",
+            "Turn the heat back to high, add the beef stock and simmer until reduced by half, about 4 minutes.",
+            "Stir in the cream and crushed pepper, lower to medium-high heat and simmer for 3-4 minutes until slightly thickened.",
+            "Return the chicken to the pan, lower the heat and cook for another 2-3 minutes, spooning the sauce over, until heated through.",
+            "Serve immediately."
           ],
-          "informacoesNutricionaisAproximadas": {
-            "calorias": 390,
-            "proteinasG": 12,
-            "carboidratosG": 62,
-            "gordurasG": 10
-          },
-          "restricoesAtendidas": [ "vegano", "sem-gluten" ]
+          "approximateNutritionInfo": { "calories": 442, "proteinG": 35, "carbsG": 3, "fatG": 27 },
+          "restrictionsMet": ["gluten-free"]
         }
 
-        Não inclua markdown, comentários ou texto explicativo. Apenas o objeto JSON.
+        --- EXAMPLE 3 ---
+        Input:
+        Available ingredients: unsalted butter, sugar, lemon zest and juice, vanilla extract, eggs, milk, wheat flour.
+        Dietary restrictions: vegetarian.
+        Desired dish type: dessert.
+        Maximum prep time: 60 minutes.
+        Servings: 5.
+
+        Expected output:
+        {
+          "name": "Self-saucing lemon pudding",
+          "description": "A baked dessert whose batter naturally separates into two layers while baking: a light, airy sponge on top and a silky lemon custard underneath.",
+          "prepTimeMinutes": 50,
+          "servings": 5,
+          "ingredients": [
+            { "item": "unsalted butter, cubed", "quantity": "60 g" },
+            { "item": "granulated sugar", "quantity": "1 cup" },
+            { "item": "lemon zest", "quantity": "1 tbsp" },
+            { "item": "lemon juice", "quantity": "120 ml (about 2 large lemons)" },
+            { "item": "vanilla extract", "quantity": "1/2 tsp" },
+            { "item": "salt", "quantity": "1 pinch" },
+            { "item": "large eggs, separated", "quantity": "3 units" },
+            { "item": "whole milk", "quantity": "360 ml" },
+            { "item": "wheat flour", "quantity": "1/3 cup" }
+          ],
+          "instructions": [
+            "Preheat the oven to 180°C (350°F).",
+            "Melt the butter gently, either in the microwave in short bursts or over a double boiler, without letting it get too hot.",
+            "Whisk the sugar, vanilla and lemon zest into the butter. Add the egg yolks and lemon juice, whisking to combine.",
+            "Gradually whisk in the flour until lump-free, then whisk in the milk. The batter will be very thin.",
+            "In a separate bowl, beat the egg whites to stiff peaks and gently fold them into the batter, using light scooping motions to keep the air in.",
+            "Pour the batter into a baking dish set inside a larger roasting pan, and fill the outer pan with hot water halfway up the sides (water bath). Bake for about 35 minutes, until the top is golden.",
+            "Let it rest for 5 minutes before serving, making sure each portion gets some of the creamy sauce from the bottom."
+          ],
+          "approximateNutritionInfo": { "calories": 350, "proteinG": 7, "carbsG": 52, "fatG": 14 },
+          "restrictionsMet": ["vegetarian"]
+        }
+
+        Do not include markdown, comments or explanatory text. Only the JSON object.
         """;
     }
 }

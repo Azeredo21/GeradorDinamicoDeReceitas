@@ -15,43 +15,43 @@ namespace GeradorDinamicoDeReceitas.Services
         {
         "type": "object",
         "properties": {
-            "nome": { "type": "string" },
-            "descricao": { "type": "string" },
-            "tempoPreparoMinutos": { "type": "integer" },
-            "porcoes": { "type": "integer" },
-            "ingredientes": {
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "prepTimeMinutes": { "type": "integer" },
+            "servings": { "type": "integer" },
+            "ingredients": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
                 "item": { "type": "string" },
-                "quantidade": { "type": "string" }
+                "quantity": { "type": "string" }
                 },
-                "required": ["item", "quantidade"]
+                "required": ["item", "quantity"]
             }
             },
-            "modoPreparo": {
+            "instructions": {
             "type": "array",
             "items": { "type": "string" }
             },
-            "informacoesNutricionaisAproximadas": {
+            "approximateNutritionInfo": {
             "type": "object",
             "properties": {
-                "calorias": { "type": "integer" },
-                "proteinasG": { "type": "integer" },
-                "carboidratosG": { "type": "integer" },
-                "gordurasG": { "type": "integer" }
+                "calories": { "type": "integer" },
+                "proteinG": { "type": "integer" },
+                "carbsG": { "type": "integer" },
+                "fatG": { "type": "integer" }
             },
-            "required": ["calorias", "proteinasG", "carboidratosG", "gordurasG"]
+            "required": ["calories", "proteinG", "carbsG", "fatG"]
             },
-            "restricoesAtendidas": {
+            "restrictionsMet": {
             "type": "array",
             "items": { "type": "string" }
             }
         },
         "required": [
-            "nome", "descricao", "tempoPreparoMinutos", "porcoes",
-            "ingredientes", "modoPreparo", "informacoesNutricionaisAproximadas", "restricoesAtendidas"
+            "name", "description", "prepTimeMinutes", "servings",
+            "ingredients", "instructions", "approximateNutritionInfo", "restrictionsMet"
         ]
         }
         """)!;
