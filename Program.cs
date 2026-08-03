@@ -1,5 +1,7 @@
 using GeradorDinamicoDeReceitas.Configuration;
+using GeradorDinamicoDeReceitas.Data;
 using GeradorDinamicoDeReceitas.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +22,10 @@ builder.Services.AddHttpClient<IOllamaClient, OllamaClient>((sp, client) =>
 
 builder.Services.AddScoped<IPromptBuilderService, PromptBuilderService>();
 builder.Services.AddScoped<IRecipeAiService, RecipeAiService>();
-
+builder.Services.AddScoped<IRecipeHistoryService, RecipeHistoryService>();
+builder.Services.AddDbContext<RecipeDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
